@@ -53,11 +53,18 @@
     .history-item .del-btn { opacity: 0.5; border: none; background: transparent; color: #ff4444; font-size: 1.1rem; cursor: pointer; }
     .history-item:hover .del-btn { opacity: 1; }
 
-    /* Header */
-    header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); background: rgba(10, 5, 16, 0.85); backdrop-filter: blur(15px); z-index: 10; }
-    .header-left { display: flex; align-items: center; gap: 12px; }
+    /* Header & Branding */
+    header { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); background: rgba(10, 5, 16, 0.85); backdrop-filter: blur(15px); z-index: 10; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
     #sidebar-toggle { background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; }
-    .mode-select { background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; outline: none; appearance: none; cursor: pointer; }
+    
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .logo-icon { width: 30px; height: 30px; background: var(--accent-gradient); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; color: #fff; }
+    .brand-text { display: flex; flex-direction: column; }
+    .brand-title { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; color: #fff; line-height: 1.2; text-shadow: 0 2px 10px rgba(255, 0, 127, 0.3); }
+    .brand-sub { font-size: 0.6rem; color: #00e5ff; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .mode-select { background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; outline: none; appearance: none; cursor: pointer; }
 
     /* Chat Area */
     #chat-container { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 24px; scroll-behavior: smooth; }
@@ -146,14 +153,20 @@
     <header>
       <div class="header-left">
         <button id="sidebar-toggle">☰</button>
-        <div class="avatar" style="width:28px; height:28px; font-size:0.7rem; box-shadow:none;">O</div>
-        <select class="mode-select" id="ai-mode" onchange="updateSystemPrompt()">
-          <option value="general">⚡ General AI</option>
-          <option value="coding">💻 Code Wizard</option>
-          <option value="hardware">🔌 Hardware & ESP32</option>
-          <option value="math">📐 Math & Science</option>
-        </select>
+        <div class="brand">
+          <div class="logo-icon">O</div>
+          <div class="brand-text">
+            <div class="brand-title">OPV-GPT</div>
+            <div class="brand-sub">Engineered by Gurnihaal</div>
+          </div>
+        </div>
       </div>
+      <select class="mode-select" id="ai-mode" onchange="updateSystemPrompt()">
+        <option value="general">⚡ General</option>
+        <option value="coding">💻 Code</option>
+        <option value="hardware">🔌 ESP32</option>
+        <option value="math">📐 Math</option>
+      </select>
     </header>
 
     <div id="chat-container">
@@ -275,7 +288,6 @@
         hero.style.display = "flex";
       } else {
         hero.style.display = "none";
-        // Skip system prompt
         for (let i = 1; i < historyMsg.length; i++) {
           renderBubble(historyMsg[i].content, historyMsg[i].role, false);
         }
@@ -289,7 +301,6 @@
       const idx = chats.findIndex(c => c.id === currentChatId);
       if (idx > -1) {
         chats[idx].messages = historyMsg;
-        // Auto-title based on first user message
         if (chats[idx].title === "New Chat" && historyMsg.length > 1) {
           let title = historyMsg[1].content.split("\n")[0].substring(0, 30);
           chats[idx].title = title + "...";
@@ -341,7 +352,7 @@
       } catch (err) {
         alert("Could not read file.");
       }
-      fileInput.value = ""; // reset
+      fileInput.value = "";
     });
 
     function editMessage(text) {
@@ -383,7 +394,6 @@
       wrapper.appendChild(bubble);
       row.appendChild(wrapper);
 
-      // Action Bars
       if (role === "user") {
         const act = document.createElement("div");
         act.className = "user-action-bar action-bar";
@@ -406,7 +416,7 @@
 
     function addCodeCopyButtons(element) {
       element.querySelectorAll('pre').forEach(pre => {
-        if(pre.querySelector('.copy-code-btn')) return; // already exists
+        if(pre.querySelector('.copy-code-btn')) return;
         const btn = document.createElement('button');
         btn.className = 'copy-code-btn';
         btn.textContent = 'Copy';
@@ -444,8 +454,8 @@
     async function regenerateLast() {
       if(historyMsg.length < 2) return;
       if(historyMsg[historyMsg.length-1].role === "assistant") {
-        historyMsg.pop(); // remove last bot msg
-        chatContainer.lastChild.remove(); // remove DOM row
+        historyMsg.pop();
+        chatContainer.lastChild.remove();
       }
       await fetchCompletion();
     }
@@ -486,7 +496,7 @@
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
-          buffer = lines.pop(); // keep incomplete line in buffer
+          buffer = lines.pop();
 
           for (const line of lines) {
             if (line.startsWith("data: ")) {
@@ -497,7 +507,6 @@
                 const token = data.choices[0]?.delta?.content || "";
                 fullText += token;
                 
-                // Live render markdown
                 let display = fullText.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
                 botBubble.innerHTML = marked.parse(display || "...");
                 addCodeCopyButtons(botBubble);
@@ -507,12 +516,10 @@
           }
         }
 
-        // Finalize
         let finalReply = fullText.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
         historyMsg.push({ role: "assistant", content: finalReply });
         saveCurrentChat();
         
-        // Add action bar to final message
         const act = document.createElement("div");
         act.className = "action-bar";
         act.innerHTML = `
@@ -538,7 +545,6 @@
       }
     }
 
-    // Listeners
     sendBtn.onclick = handleSend;
     stopBtn.onclick = () => { if(abortController) abortController.abort(); };
     input.addEventListener("keydown", (e) => {
@@ -548,7 +554,6 @@
       }
     });
 
-    // Boot
     init();
   </script>
 </body>
