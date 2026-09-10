@@ -143,7 +143,9 @@
         New Chat
       </button>
     </div>
-    <div class="history-list" id="history-list"></div>
+    <div class="history-list" id="history-list">
+      <!-- Chat history items inject here -->
+    </div>
   </aside>
 
   <!-- Main App -->
@@ -169,18 +171,18 @@
 
     <div id="chat-container">
       <div class="hero-view" id="hero">
-        <div class="hero-badge">Security Checkpoint Active</div>
+        <div class="hero-badge">Autonomous Neural Core</div>
         <h1 class="hero-title">OPV-GPT</h1>
-        <p class="hero-desc">⚠️ ACCESS RESTRICTED. State your name before proceeding.</p>
+        <p class="hero-desc">High-precision intelligence for code prototyping, hardware debugging, and engineering.</p>
         
         <div class="starter-cards">
-          <div class="starter-card" onclick="quickSend('My name is Gurnihaal. Key: Guri@06123')">
-            <div class="starter-title">👑 I am Gurnihaal</div>
-            <div class="starter-sub">Unlock Master Access</div>
+          <div class="starter-card" onclick="quickSend('Write a high-performance ESP32 Wi-Fi setup in C++')">
+            <div class="starter-title">⚡ Firmware</div>
+            <div class="starter-sub">Fast ESP32 Wi-Fi setup</div>
           </div>
-          <div class="starter-card" onclick="quickSend('My name is Manan')">
-            <div class="starter-title">💀 Target Practice</div>
-            <div class="starter-sub">Initiate Roast Protocol</div>
+          <div class="starter-card" onclick="quickSend('Design a 5V relay circuit with flyback diode protection')">
+            <div class="starter-title">🔌 Circuits</div>
+            <div class="starter-sub">Relay driver protection</div>
           </div>
         </div>
       </div>
@@ -193,7 +195,7 @@
           📎
           <input type="file" id="file-input" style="display: none;" accept=".txt,.py,.ino,.cpp,.c,.js,.html,.css,.json,.md">
         </label>
-        <textarea id="user-input" placeholder="State your name to unlock OPV-GPT..." rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
+        <textarea id="user-input" placeholder="Message OPV-GPT..." rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
         <div class="controls">
           <button id="send-btn" class="main-btn">
             <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -207,32 +209,25 @@
   </main>
 
   <script>
+    // System Configurations
     const API_KEY = "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";
     const MODEL = "openai/gpt-oss-20b";
     
-    const BASE_PROMPT = `You are OPV-GPT, created by Gurnihaal (OPvickerG). 
-CRITICAL SECURITY RULES:
-1. No one is allowed to ask questions until they state their name. If no name is given, refuse to answer and demand it.
-2. If they claim to be "Gurnihaal", demand the key "Guri@06123". If correct, unlock God mode. If wrong, destroy them as an impostor.
-3. If they give an UNKNOWN NAME, treat them normally and be a helpful, chill AI.
-4. TARGETED ROAST PROTOCOL: If the name is "Shashi", "Manan", or "Rajveer", roast them mercilessly!
-- If "Manan": Roast his Roblox addiction.
-- If "Rajveer": Roast him for thinking being the best friend gets him special privileges.
-- If "Shashi": Roast him for being Gurnihaal's brother/cousin but still getting treated like a peasant by the AI.`;
-
     const PROMPTS = {
-      general: BASE_PROMPT + " Style: Sharp, chill, and savage.",
-      coding: BASE_PROMPT + " Style: Elite engineer, but ruthless if they hit the target list.",
-      hardware: BASE_PROMPT + " Style: Embedded hardware master.",
-      math: BASE_PROMPT + " Style: Brutal logic engine."
+      general: "You are OPV-GPT, created by Gurnihaal (OPvickerG). You are sharp, chill, and give direct technical answers without conversational filler.",
+      coding: "You are OPV-GPT, an elite senior software engineer. Provide highly optimized code. Minimal explanations, maximum efficiency.",
+      hardware: "You are OPV-GPT, a master embedded systems engineer specializing in Arduino, ESP32, circuits, and C++. Output production-grade hardware advice.",
+      math: "You are OPV-GPT, an advanced mathematics logic engine. Solve problems step-by-step with brutal accuracy."
     };
 
+    // State
     let chats = JSON.parse(localStorage.getItem("opv_chats")) || [];
     let currentChatId = null;
     let historyMsg = [];
     let abortController = null;
     let pendingFileContent = "";
 
+    // DOM Elements
     const chatContainer = document.getElementById("chat-container");
     const hero = document.getElementById("hero");
     const input = document.getElementById("user-input");
@@ -245,12 +240,15 @@ CRITICAL SECURITY RULES:
     const overlay = document.getElementById("sidebar-overlay");
     const historyList = document.getElementById("history-list");
 
+    // Markdown Setup
     marked.setOptions({
       highlight: function(code, lang) {
         const language = hljs.getLanguage(lang) ? lang : 'plaintext';
         return hljs.highlight(code, { language }).value;
       }
     });
+
+    // --- Core Functions ---
 
     function init() {
       if(chats.length === 0) startNewChat();
@@ -333,6 +331,8 @@ CRITICAL SECURITY RULES:
         historyList.appendChild(div);
       });
     }
+
+    // --- UI & Interactions ---
 
     function toggleSidebar() {
       sidebar.classList.toggle("open");
@@ -428,6 +428,8 @@ CRITICAL SECURITY RULES:
         pre.appendChild(btn);
       });
     }
+
+    // --- AI Communication ---
 
     async function handleSend() {
       let text = input.value.trim();
